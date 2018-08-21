@@ -6,7 +6,7 @@ import org.f100ded.play.fakews._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{AsyncFunSpec, BeforeAndAfterAll, Matchers}
 import perretta.iex.client.ClientConstants
-import perretta.iex.client.stock.model.Logo
+import perretta.iex.client.stock.model._
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -53,6 +53,15 @@ class StockIEXClientSpec extends AsyncFunSpec with Matchers with BeforeAndAfterA
       val fakeResponse = """["FB", "AAPL", "AMD"]"""
       val client = makeFakeStockIEXClient(nvdaSymbol, "peers", fakeResponse)
       client.getPeers(nvdaSymbol).map(_ shouldEqual expected)
+    }
+  }
+
+  describe("getRelevant") {
+    it("should get the relevant ticker symbols for a stock.") {
+      val expected: Relevant = Relevant(peers = false, Seq("FB", "AAPL", "AMD"))
+      val fakeResponse = """{"peers":false,"symbols":["FB", "AAPL", "AMD"]}"""
+      val client = makeFakeStockIEXClient(nvdaSymbol, "relevant", fakeResponse)
+      client.getRelevant(nvdaSymbol).map(_ shouldEqual expected)
     }
   }
 

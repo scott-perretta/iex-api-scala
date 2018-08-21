@@ -50,4 +50,17 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
     .get()
     .map(response => Json.parse(response.body).as[Seq[String]])
 
+  /**
+    * Gets a stock's relevant symbols.
+    * @param symbol The stock's ticker symbol.
+    * @return Similar to the peers endpoint, except this will return most active market symbols
+    *         when peers are not available. If the symbols returned are not peers, the peers key
+    *         will be false. This is not intended to represent a definitive or accurate list of
+    *         peers, and is subject to change at any time.
+    */
+  def getRelevant(symbol: String): Future[Relevant] = wsClient
+    .url(baseUrl + symbol + "/relevant")
+    .get()
+    .map(response => Json.parse(response.body).as[Relevant])
+
 }
