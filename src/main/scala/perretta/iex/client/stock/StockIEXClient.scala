@@ -3,7 +3,6 @@ package perretta.iex.client.stock
 import perretta.iex.client.stock.model.DateRange.DateRange
 import perretta.iex.client.{ClientConstants, IEXClient}
 import perretta.iex.client.stock.model._
-import play.api.libs.json.Json
 import play.api.libs.ws.StandaloneWSClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -11,7 +10,9 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Client handling all HTTP requests for the stocks endpoint.
   */
-case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(implicit val executionContext: ExecutionContext) extends IEXClient {
+case class StockIEXClient(
+  override protected val wsClient: StandaloneWSClient
+)(implicit val executionContext: ExecutionContext) extends IEXClient {
 
   override protected def baseUrl: String = ClientConstants.BaseUrlPrefix + "/stock/"
 
@@ -21,20 +22,14 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
     * @return a single number, being the IEX real time price, the 15 minute
     *         delayed market price, or the previous close price, is returned
     */
-  def getPrice(symbol: String): Future[Double] = wsClient
-    .url(baseUrl + symbol + "/price")
-    .get()
-    .map(response => Json.parse(response.body).as[Double])
+  def getPrice(symbol: String): Future[Double] = wsClientGetRequest[Double](symbol + "/price")
 
   /**
     * Gets the location of a company's logo.
     * @param symbol the stock's ticker symbol
     * @return location of the company logo
     */
-  def getLogo(symbol: String): Future[Logo] = wsClient
-    .url(baseUrl + symbol + "/logo")
-    .get()
-    .map(response => Json.parse(response.body).as[Logo])
+  def getLogo(symbol: String): Future[Logo] = wsClientGetRequest[Logo](symbol + "/logo")
 
   /**
     * Gets a collection of peer ticker symbols.
@@ -46,10 +41,7 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
     * @return an array of peer tickers as defined by IEX. This is not intended to represent
     *         a definitive or accurate list of peers, and is subject to change at any time
     */
-  def getPeers(symbol: String): Future[Seq[String]] = wsClient
-    .url(baseUrl + symbol + "/peers")
-    .get()
-    .map(response => Json.parse(response.body).as[Seq[String]])
+  def getPeers(symbol: String): Future[Seq[String]] = wsClientGetRequest[Seq[String]](symbol + "/peers")
 
   /**
     * Gets a stock's relevant symbols.
@@ -59,10 +51,7 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
     *         will be false. This is not intended to represent a definitive or accurate list of
     *         peers, and is subject to change at any time
     */
-  def getRelevant(symbol: String): Future[Relevant] = wsClient
-    .url(baseUrl + symbol + "/relevant")
-    .get()
-    .map(response => Json.parse(response.body).as[Relevant])
+  def getRelevant(symbol: String): Future[Relevant] = wsClientGetRequest[Relevant](symbol + "/relevant")
 
   /**
     * Gets all stock split occurrences during a given date range.
@@ -70,9 +59,9 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
     * @param dateRange a given [[DateRange]] to look for stock splits
     * @return a collection of stock splits
     */
-  def getSplits(symbol: String, dateRange: DateRange): Future[Seq[Split]] = wsClient
-    .url(baseUrl + symbol + "/splits/" + dateRange.toString)
-    .get()
-    .map(response => Json.parse(response.body).as[Seq[Split]])
+  def getSplits(symbol: String, dateRange: DateRange): Future[Seq[Split]] = {
+    val endpoint = symbol + "/splits/" + dateRange.toString
+    wsClientGetRequest[Seq[Split]](endpoint)
+  }
 
 }

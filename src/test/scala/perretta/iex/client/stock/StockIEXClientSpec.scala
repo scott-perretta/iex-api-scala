@@ -8,8 +8,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{AsyncFunSpec, BeforeAndAfterAll, Matchers}
 import perretta.iex.client.ClientConstants
 import perretta.iex.client.stock.model._
-import play.api.libs.ws.ahc.{AhcWSClientConfig, StandaloneAhcWSClient}
-import play.shaded.ahc.org.asynchttpclient.{DefaultAsyncHttpClient, DefaultAsyncHttpClientConfig}
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
