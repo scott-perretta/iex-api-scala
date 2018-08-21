@@ -6,7 +6,7 @@ import org.f100ded.play.fakews._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{AsyncFunSpec, BeforeAndAfterAll, Matchers}
 import perretta.iex.client.ClientConstants
-import perretta.iex.client.stock.model.TickerSymbol
+import perretta.iex.client.stock.model.Logo
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -18,8 +18,10 @@ class StockIEXClientSpec extends AsyncFunSpec with Matchers with BeforeAndAfterA
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val materialize: Materializer = ActorMaterializer()
 
-  def makeFakeStockIEXClient(symbol: TickerSymbol, endpoint: String, response: String): StockIEXClient = {
-    val requestUrl = s"${ClientConstants.BaseUrlPrefix}/stock/${symbol.symbol}/$endpoint"
+  lazy val nvdaSymbol = "NVDA"
+
+  def makeFakeStockIEXClient(symbol: String, endpoint: String, response: String): StockIEXClient = {
+    val requestUrl = s"${ClientConstants.BaseUrlPrefix}/stock/$symbol/$endpoint"
     val wsClient = StandaloneFakeWSClient {
       case _ @ GET(url"$url") =>
         url shouldBe requestUrl
@@ -31,9 +33,26 @@ class StockIEXClientSpec extends AsyncFunSpec with Matchers with BeforeAndAfterA
   describe("getPrice") {
     it("should get the price of a stock.") {
       val expected: Double = 1000.0
-      val symbol = TickerSymbol("NVDA")
-      val client = makeFakeStockIEXClient(symbol, "price", expected.toString)
-      client.getPrice(symbol).map(_ shouldEqual expected)
+      val client = makeFakeStockIEXClient(nvdaSymbol, "price", expected.toString)
+      client.getPrice(nvdaSymbol).map(_ shouldEqual expected)
+    }
+  }
+
+  describe("getLogo") {
+    it("should get the logo of a company.") {
+      val expected: Logo = Logo("https://storage.googleapis.com/iex/api/logos/NVDA.png")
+      val fakeResponse = """{"url":"https://storage.googleapis.com/iex/api/logos/NVDA.png"}"""
+      val client = makeFakeStockIEXClient(nvdaSymbol, "logo", fakeResponse)
+      client.getLogo(nvdaSymbol).map(_ shouldEqual expected)
+    }
+  }
+
+  describe("getPeers") {
+    it("should get the peer group for a stock.") {
+      val expected: Seq[String] = Seq("FB", "AAPL", "AMD")
+      val fakeResponse = """["FB", "AAPL", "AMD"]"""
+      val client = makeFakeStockIEXClient(nvdaSymbol, "peers", fakeResponse)
+      client.getPeers(nvdaSymbol).map(_ shouldEqual expected)
     }
   }
 
