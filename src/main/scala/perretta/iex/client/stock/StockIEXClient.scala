@@ -1,5 +1,6 @@
 package perretta.iex.client.stock
 
+import perretta.iex.client.stock.model.DateRange.DateRange
 import perretta.iex.client.{ClientConstants, IEXClient}
 import perretta.iex.client.stock.model._
 import play.api.libs.json.Json
@@ -16,9 +17,9 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
 
   /**
     * Gets the market price for a ticker symbol.
-    * @param symbol The stock's ticker symbol.
-    * @return A single number, being the IEX real time price, the 15 minute
-    *         delayed market price, or the previous close price, is returned.
+    * @param symbol the stock's ticker symbol
+    * @return a single number, being the IEX real time price, the 15 minute
+    *         delayed market price, or the previous close price, is returned
     */
   def getPrice(symbol: String): Future[Double] = wsClient
     .url(baseUrl + symbol + "/price")
@@ -27,8 +28,8 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
 
   /**
     * Gets the location of a company's logo.
-    * @param symbol The stock's ticker symbol.
-    * @return Location of the company logo.
+    * @param symbol the stock's ticker symbol
+    * @return location of the company logo
     */
   def getLogo(symbol: String): Future[Logo] = wsClient
     .url(baseUrl + symbol + "/logo")
@@ -38,12 +39,12 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
   /**
     * Gets a collection of peer ticker symbols.
     *
-    * Stocks may often have a peer group associated with it. A peer group is a collection of stocks
-    * that are in the same industry sector, and are of similar size, as a particular stock.
+    * A stock can have a peer group associated with itself. A peer group is a collection of ticker
+    * symbols that are in the same industry sector, and are of similar size, as a particular stock.
     *
-    * @param symbol The stock's ticker symbol.
-    * @return An array of peer tickers as defined by IEX. This is not intended to represent
-    *         a definitive or accurate list of peers, and is subject to change at any time.
+    * @param symbol the stock's ticker symbol
+    * @return an array of peer tickers as defined by IEX. This is not intended to represent
+    *         a definitive or accurate list of peers, and is subject to change at any time
     */
   def getPeers(symbol: String): Future[Seq[String]] = wsClient
     .url(baseUrl + symbol + "/peers")
@@ -52,15 +53,26 @@ case class StockIEXClient(override protected val wsClient: StandaloneWSClient)(i
 
   /**
     * Gets a stock's relevant symbols.
-    * @param symbol The stock's ticker symbol.
-    * @return Similar to the peers endpoint, except this will return most active market symbols
+    * @param symbol the stock's ticker symbol
+    * @return similar to the peers endpoint, except this will return most active market symbols
     *         when peers are not available. If the symbols returned are not peers, the peers key
     *         will be false. This is not intended to represent a definitive or accurate list of
-    *         peers, and is subject to change at any time.
+    *         peers, and is subject to change at any time
     */
   def getRelevant(symbol: String): Future[Relevant] = wsClient
     .url(baseUrl + symbol + "/relevant")
     .get()
     .map(response => Json.parse(response.body).as[Relevant])
+
+  /**
+    * Gets all stock split occurrences during a given date range.
+    * @param symbol the stock's ticker symbol
+    * @param dateRange a given [[DateRange]] to look for stock splits
+    * @return a collection of stock splits
+    */
+  def getSplits(symbol: String, dateRange: DateRange): Future[Seq[Split]] = wsClient
+    .url(baseUrl + symbol + "/splits/" + dateRange.toString)
+    .get()
+    .map(response => Json.parse(response.body).as[Seq[Split]])
 
 }

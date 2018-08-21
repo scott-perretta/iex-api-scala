@@ -14,6 +14,7 @@ lazy val root = (project in file("."))
       fakePlayWSStandalone,
       playAhcWSStandalone,
       playJson,
+      playJsonJoda,
       playWS,
       scalaTest
     )

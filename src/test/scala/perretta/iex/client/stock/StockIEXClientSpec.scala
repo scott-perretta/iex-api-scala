@@ -3,10 +3,13 @@ package perretta.iex.client.stock
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import org.f100ded.play.fakews._
+import org.joda.time.LocalDate
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{AsyncFunSpec, BeforeAndAfterAll, Matchers}
 import perretta.iex.client.ClientConstants
 import perretta.iex.client.stock.model._
+import play.api.libs.ws.ahc.{AhcWSClientConfig, StandaloneAhcWSClient}
+import play.shaded.ahc.org.asynchttpclient.{DefaultAsyncHttpClient, DefaultAsyncHttpClientConfig}
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -62,6 +65,54 @@ class StockIEXClientSpec extends AsyncFunSpec with Matchers with BeforeAndAfterA
       val fakeResponse = """{"peers":false,"symbols":["FB", "AAPL", "AMD"]}"""
       val client = makeFakeStockIEXClient(nvdaSymbol, "relevant", fakeResponse)
       client.getRelevant(nvdaSymbol).map(_ shouldEqual expected)
+    }
+  }
+
+  describe("getSplits") {
+    it("should get all stock splits that occurred during a given date range.") {
+      val expected: Seq[Split] = Seq(
+        Split(
+          exDate = new LocalDate("2014-06-09"),
+          declaredDate = new LocalDate("2014-04-23"),
+          recordDate = new LocalDate("2014-06-02"),
+          paymentDate = new LocalDate("2014-06-06"),
+          ratio = 0.142857,
+          toFactor = 7,
+          forFactor = 1
+        ),
+        Split(
+          exDate = new LocalDate("2013-06-09"),
+          declaredDate = new LocalDate("2013-04-23"),
+          recordDate = new LocalDate("2013-06-02"),
+          paymentDate = new LocalDate("2013-06-06"),
+          ratio = 0.234567,
+          toFactor = 3,
+          forFactor = 2
+        )
+      )
+      val fakeResponse =
+        """[
+             {
+               "exDate":"2014-06-09",
+               "declaredDate":"2014-04-23",
+               "recordDate":"2014-06-02",
+               "paymentDate":"2014-06-06",
+               "ratio":0.142857,
+               "toFactor":7,
+               "forFactor":1
+             },
+             {
+               "exDate":"2013-06-09",
+               "declaredDate":"2013-04-23",
+               "recordDate":"2013-06-02",
+               "paymentDate":"2013-06-06",
+               "ratio":0.234567,
+               "toFactor":3,
+               "forFactor":2
+             }
+           ]""".stripMargin
+      val client = makeFakeStockIEXClient(nvdaSymbol, s"splits/${DateRange.FiveYear}", fakeResponse)
+      client.getSplits(nvdaSymbol, DateRange.FiveYear).map(_ shouldEqual expected)
     }
   }
 

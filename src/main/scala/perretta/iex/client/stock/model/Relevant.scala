@@ -4,8 +4,8 @@ import play.api.libs.json.{Format, Json}
 
 /**
   * A collection of relevant ticker symbols for a stock. These symbols may or may not be peer tickers.
-  * @param peers Flag that indicates when [[symbols]] contains peer tickers.
-  * @param symbols Collection of ticker symbols.
+  * @param peers flag that indicates when [[symbols]] contains peer tickers
+  * @param symbols collection of ticker symbols
   */
 case class Relevant(peers: Boolean, symbols: Seq[String])
 
