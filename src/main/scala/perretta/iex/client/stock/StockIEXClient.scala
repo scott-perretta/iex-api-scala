@@ -64,4 +64,16 @@ case class StockIEXClient(
     wsClientGetRequest[Seq[Split]](endpoint)
   }
 
+  /**
+    * Gets the quote of a stock.
+    * @param symbol the stock's ticker symbol
+    * @param displayPercent a flag indicating whether or not to show percent values for applicable fields
+    * @return a quote for a stock
+    */
+  def getQuote(symbol: String, displayPercent: Boolean): Future[Quote] = {
+    val endpoint = symbol + "/quote"
+    val queryParameters: Seq[(String, String)] = Seq(("displayPercent", displayPercent.toString))
+    wsClientGetRequest[Quote](endpoint, queryParameters)
+  }
+
 }

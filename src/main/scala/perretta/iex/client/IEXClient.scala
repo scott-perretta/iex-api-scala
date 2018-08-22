@@ -22,9 +22,11 @@ trait IEXClient {
     * @return a parsed response body
     */
   protected def wsClientGetRequest[T](
-    endpoint: String
+    endpoint: String,
+    queryParameters: Seq[(String, String)] = Seq.empty
   )(implicit reads: Reads[T], executionContext: ExecutionContext): Future[T] = wsClient
     .url(baseUrl + endpoint)
+    .withQueryStringParameters(queryParameters: _*)
     .get()
     .map(response => Json.parse(response.body).as[T])
 
